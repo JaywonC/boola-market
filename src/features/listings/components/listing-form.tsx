@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ListingAssistantSlot } from "@/features/assistant/components/listing-assistant-slot";
+import type { ListingDraft } from "@/features/assistant/types";
 import { createListing, type ListingActionState } from "@/features/listings/actions";
 import { ListingArt } from "@/features/listings/components/listing-art";
 import {
@@ -17,6 +18,7 @@ import {
   TICKET_LABELS,
   TICKET_TYPES,
   type Category,
+  type Condition,
   type TicketType,
 } from "@/lib/categories";
 
@@ -30,6 +32,20 @@ export function ListingForm() {
   const [ticketType, setTicketType] = useState<TicketType>("harvard_yale");
   const [listingType, setListingType] = useState("fixed");
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [condition, setCondition] = useState<Condition>("good");
+  const [seniorMoveOut, setSeniorMoveOut] = useState(false);
+
+  function applyDraft(draft: ListingDraft) {
+    setTitle(draft.title);
+    setDescription(draft.description);
+    setPrice(String(Math.max(1, Math.round(draft.priceCents / 100))));
+    setCategory(draft.category);
+    setCondition(draft.condition);
+    setSeniorMoveOut(draft.seniorMoveOut);
+    if (draft.category === "tickets") setTicketType(draft.ticketType ?? "other");
+  }
 
   return (
     <form action={action} className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
@@ -39,6 +55,8 @@ export function ListingForm() {
             {state.error}
           </p>
         ) : null}
+
+        <ListingAssistantSlot onApply={applyDraft} photoError={state.fieldErrors.photos} />
 
         <div className="space-y-2">
           <Label htmlFor="title">Title</Label>
@@ -65,6 +83,8 @@ export function ListingForm() {
             required
             minLength={20}
             rows={6}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
             placeholder="Where it is, what condition it’s in, and how you’ll hand it off."
             className="min-h-32 bg-card"
             aria-invalid={Boolean(state.fieldErrors.description)}
@@ -83,6 +103,8 @@ export function ListingForm() {
               max={9999}
               step="1"
               required
+              value={price}
+              onChange={(event) => setPrice(event.target.value)}
               placeholder="90"
               className="h-10 bg-card"
               aria-invalid={Boolean(state.fieldErrors.price)}
@@ -94,7 +116,13 @@ export function ListingForm() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="condition">Condition</Label>
-            <select id="condition" name="condition" className={fieldClass} defaultValue="good">
+            <select
+              id="condition"
+              name="condition"
+              className={fieldClass}
+              value={condition}
+              onChange={(event) => setCondition(event.target.value as Condition)}
+            >
               {CONDITIONS.map((condition) => (
                 <option key={condition} value={condition}>
                   {CONDITION_LABELS[condition]}
@@ -185,20 +213,17 @@ export function ListingForm() {
         </fieldset>
 
         <label className="flex items-start gap-2 text-sm">
-          <input type="checkbox" name="seniorMoveOut" className="mt-1" />
+          <input
+            type="checkbox"
+            name="seniorMoveOut"
+            className="mt-1"
+            checked={seniorMoveOut}
+            onChange={(event) => setSeniorMoveOut(event.target.checked)}
+          />
           <span>
             Senior move-out. Use this for furniture and dorm stuff you’re leaving when you graduate.
           </span>
         </label>
-
-        <div className="space-y-2">
-          <Label htmlFor="photos">Photos</Label>
-          <Input id="photos" name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="h-10 bg-card pt-1.5" />
-          <p className="text-xs text-muted-foreground">Optional. Up to four images, 2 MB each. A ticket-style graphic shows if you skip this.</p>
-          <FieldError message={state.fieldErrors.photos} />
-        </div>
-
-        <ListingAssistantSlot />
 
         <Button type="submit" disabled={pending} className="h-10 px-4">
           {pending ? "Publishing…" : "Publish listing"}
@@ -218,6 +243,7 @@ export function ListingForm() {
             <p className="mt-1 text-sm text-muted-foreground">
               {category === "tickets" ? TICKET_LABELS[ticketType] : CATEGORY_LABELS[category]}
               {listingType === "auction" ? " · Auction" : ""}
+              {price ? ` · $${price}` : ""}
             </p>
           </div>
         </div>
