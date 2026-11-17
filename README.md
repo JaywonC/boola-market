@@ -90,7 +90,7 @@ Categories are Tickets (YSO, Harvard–Yale, concerts, other), Furniture, Textbo
 ## Where the next features plug in
 
 - **Live auctions.** Bid rows, the high bid, and `evaluateBid` already exist. History renders from `src/features/auctions/components/bid-list.tsx`. `placeBid` in `src/features/auctions/actions.ts` writes a validated bid. Add the form, the countdown, and live updates in this folder.
-- **Haggling chat.** Threads are stored and shown by `src/features/messages/components/thread-preview.tsx`. `sendMessage` in `src/features/messages/actions.ts` appends a message from the buyer or seller. Replace the preview with the live panel.
+- **Haggling chat.** From a fixed-price listing, Message seller opens `/messages`. Buyers send an offer, and the seller can accept, decline, or counter. An accepted offer is that buyer’s price and lets them record the purchase. The thread polls in local mode.
 - **Seller reviews.** Completed orders and reviews are in the seed, and the profile page renders rating plus completed sales. `reviewSeller` in `src/features/reviews/actions.ts` is the write path. Add the form after a completed order.
 - **Resco-to-resco delivery.** `src/features/delivery` holds the handoff type. Colleges are already on every profile. Attach a handoff to an order, then show it on the listing page.
 - **Senior move-out.** `listings.seniorMoveOut` is live. Browse has the filter, and `/move-out` is the section. Scheduling, bundle splits, and a May countdown belong in `src/features/move-out`.

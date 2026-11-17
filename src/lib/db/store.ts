@@ -4,7 +4,7 @@ import path from "node:path";
 import { connection } from "next/server";
 
 import { evaluateBid } from "@/features/auctions/rules";
-import { evaluateMessage } from "@/features/messages/rules";
+import { evaluateThreadPost } from "@/features/messages/rules";
 import { evaluateOrder } from "@/features/orders/rules";
 import { evaluateReview } from "@/features/reviews/rules";
 import type { College } from "@/lib/colleges";
@@ -155,28 +155,58 @@ export async function insertBid(input: { listingId: string; bidderId: string; am
   });
 }
 
-export async function insertMessage(input: {
-  listingId: string;
-  senderId: string;
-  body: string;
-}) {
+function saleOpen(store: StoreData, listingId: string) {
+  return store.orders.some((order) => order.listingId === listingId && order.status !== "cancelled");
+}
+
+function appendValidatedMessage(
+  store: StoreData,
+  conversation: Conversation,
+  listing: Listing,
+  senderId: string,
+  body: string,
+) {
+  const prior = store.messages
+    .filter((message) => message.conversationId === conversation.id)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
+  const decision = evaluateThreadPost({
+    listingType: listing.listingType,
+    listingStatus: listing.status,
+    askingCents: listing.priceCents,
+    saleOpen: saleOpen(store, listing.id),
+    senderId,
+    buyerId: conversation.buyerId,
+    sellerId: conversation.sellerId,
+    body,
+    prior,
+  });
+  if (!decision.ok) return decision;
+  const message: Message = {
+    id: createId("msg"),
+    conversationId: conversation.id,
+    senderId,
+    body: decision.body,
+    createdAt: new Date().toISOString(),
+  };
+  store.messages.push(message);
+  if (senderId === conversation.buyerId) conversation.buyerLastReadAt = message.createdAt;
+  else conversation.sellerLastReadAt = message.createdAt;
+  return { ok: true as const, message, conversation };
+}
+
+export async function insertMessage(input: { listingId: string; senderId: string; body: string }) {
   return withLock(async () => {
     const store = await load();
     const listing = store.listings.find((item) => item.id === input.listingId);
     if (!listing) return { ok: false as const, error: "That listing is gone." };
-    let conversation = store.conversations.find(
-      (item) =>
-        item.listingId === listing.id &&
-        (item.buyerId === input.senderId || item.sellerId === input.senderId),
-    );
-    const buyerId = input.senderId === listing.sellerId ? conversation?.buyerId ?? "" : input.senderId;
-    const decision = evaluateMessage({
-      senderId: input.senderId,
-      buyerId: buyerId || input.senderId,
-      sellerId: listing.sellerId,
-      body: input.body,
-    });
-    if (!decision.ok) return decision;
+    const onListing = store.conversations.filter((item) => item.listingId === listing.id);
+    let conversation = onListing.find((item) => item.buyerId === input.senderId);
+    if (!conversation && input.senderId === listing.sellerId) {
+      if (onListing.length > 1) {
+        return { ok: false as const, error: "Open the conversation from your inbox." };
+      }
+      conversation = onListing[0];
+    }
     if (!conversation) {
       if (input.senderId === listing.sellerId) {
         return { ok: false as const, error: "Wait for a buyer to start the thread." };
@@ -190,16 +220,85 @@ export async function insertMessage(input: {
       };
       store.conversations.push(conversation);
     }
-    const message: Message = {
-      id: createId("msg"),
-      conversationId: conversation.id,
-      senderId: input.senderId,
-      body: input.body.trim(),
-      createdAt: new Date().toISOString(),
-    };
-    store.messages.push(message);
+    const result = appendValidatedMessage(store, conversation, listing, input.senderId, input.body);
+    if (!result.ok) return result;
     await persist(store);
-    return { ok: true as const, message, conversation };
+    return result;
+  });
+}
+
+export async function insertConversationMessage(input: {
+  conversationId: string;
+  senderId: string;
+  body: string;
+}) {
+  return withLock(async () => {
+    const store = await load();
+    const conversation = store.conversations.find((item) => item.id === input.conversationId);
+    if (!conversation) return { ok: false as const, error: "That conversation is gone." };
+    const listing = store.listings.find((item) => item.id === conversation.listingId);
+    if (!listing) return { ok: false as const, error: "That listing is gone." };
+    const result = appendValidatedMessage(store, conversation, listing, input.senderId, input.body);
+    if (!result.ok) return result;
+    await persist(store);
+    return result;
+  });
+}
+
+export async function openConversation(listingId: string, buyerId: string) {
+  return withLock(async () => {
+    const store = await load();
+    const listing = store.listings.find((item) => item.id === listingId);
+    if (!listing) return { ok: false as const, error: "That listing is gone." };
+    if (listing.listingType !== "fixed") {
+      return { ok: false as const, error: "Haggling is for fixed-price listings." };
+    }
+    if (listing.status !== "active") {
+      return { ok: false as const, error: "This listing isn’t available." };
+    }
+    if (listing.sellerId === buyerId) {
+      return { ok: false as const, error: "This is your listing." };
+    }
+    let conversation = store.conversations.find(
+      (item) => item.listingId === listing.id && item.buyerId === buyerId,
+    );
+    if (!conversation) {
+      conversation = {
+        id: createId("conv"),
+        listingId: listing.id,
+        buyerId,
+        sellerId: listing.sellerId,
+        createdAt: new Date().toISOString(),
+        buyerLastReadAt: new Date().toISOString(),
+      };
+      store.conversations.push(conversation);
+      await persist(store);
+    }
+    return { ok: true as const, conversation };
+  });
+}
+
+export async function markConversationRead(conversationId: string, userId: string) {
+  return withLock(async () => {
+    const store = await load();
+    const conversation = store.conversations.find((item) => item.id === conversationId);
+    if (!conversation) return { ok: false as const, error: "That conversation is gone." };
+    if (userId !== conversation.buyerId && userId !== conversation.sellerId) {
+      return { ok: false as const, error: "Only the buyer and seller can use this thread." };
+    }
+    const incoming = store.messages
+      .filter((message) => message.conversationId === conversation.id && message.senderId !== userId)
+      .map((message) => message.createdAt)
+      .sort();
+    const latest = incoming.at(-1) ?? conversation.createdAt;
+    const previous = userId === conversation.buyerId ? conversation.buyerLastReadAt : conversation.sellerLastReadAt;
+    if (previous && previous >= latest) return { ok: true as const, changed: false as const };
+    const stamp = new Date().toISOString();
+    const next = stamp > latest ? stamp : latest;
+    if (userId === conversation.buyerId) conversation.buyerLastReadAt = next;
+    else conversation.sellerLastReadAt = next;
+    await persist(store);
+    return { ok: true as const, changed: true as const };
   });
 }
 

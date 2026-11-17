@@ -15,6 +15,7 @@ import {
 
 const links = [
   { href: "/browse", label: "Browse" },
+  { href: "/messages", label: "Messages", signedInOnly: true },
   { href: "/browse?category=tickets&ticket=harvard_yale", label: "Harvard–Yale" },
   { href: "/browse?category=tickets&ticket=yso", label: "YSO" },
   { href: "/move-out", label: "Senior move-out" },
@@ -36,7 +37,9 @@ export function MobileNav({ signedIn }: { signedIn: boolean }) {
           <SheetTitle className="font-serif text-yale">Yale Marketplace</SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col gap-1 px-4">
-          {links.map((link) => (
+          {links
+            .filter((link) => !("signedInOnly" in link) || signedIn)
+            .map((link) => (
             <SheetClose
               key={link.href}
               render={<Link href={link.href} className="rounded-lg px-2 py-2 text-base hover:bg-muted" />}
