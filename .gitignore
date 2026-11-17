@@ -30,8 +30,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Secrets stay uncommitted. .env.example is the only template, with empty placeholders.
+.env
+.env.local
+.env*.local
+.env.*
 !.env.example
 
 # local demo database and uploaded listing photos

@@ -2,7 +2,7 @@
 
 A trusted marketplace for Yale students. Every account is an `@yale.edu` address, and every seller has a residential college, a class year, and a rating from completed sales. The shelves that matter first are the ones anonymous feeds never quite manage: YSO Halloween, Harvard–Yale at the Bowl, and the loft someone has to get out of Morse before May.
 
-This repository is the foundation. Auth, the data model, browse, listing detail, create listing, and profiles work in local demo mode. Live auctions, haggling chat, review submission, resco-to-resco delivery, a deeper move-out section, and Grok-written listings are left as clear plug-in points for the next passes.
+This repository is the foundation. Auth, the data model, browse, listing detail, create listing, profiles, and the Grok listing assistant work in local demo mode. Live auctions, haggling chat, review submission, resco-to-resco delivery, and a deeper move-out section are left as clear plug-in points for the next passes.
 
 ## Built with Grok
 
@@ -25,7 +25,7 @@ Demo path:
 
 1. Choose **Sign in** and use a `@yale.edu` address, or pick Maya Chen, Jordan Hale, or Priya Shah on the sign-in page.
 2. On the next screen, choose **Open the magic link**. No email is sent in demo mode. A new address asks for name, residential college, and class year.
-3. **Sell** publishes a listing. It shows up in Browse and on your profile.
+3. **Sell** opens the form. Add a photo or a few words, choose **Write it with Grok**, then edit the draft and publish. It shows up in Browse and on your profile. Without `XAI_API_KEY`, the draft still uses comparable campus listings.
 4. Open a listing, then the seller’s name, to see rating and completed sales.
 
 To start over from the seed data, stop the server and delete `data/store.json`. Uploaded photos live in `public/uploads/`.
@@ -47,6 +47,10 @@ Copy `.env.example` to `.env.local`. The app runs with none of them set.
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key. Required only when `AUTH_PROVIDER=supabase`. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Reserved for server-side data access. Not read yet. |
 | `DATA_PROVIDER` | `local` (default) uses `data/store.json`. `supabase` is reserved and currently throws, so a half-wired database cannot silently replace the demo. |
+| `XAI_API_KEY` | Optional server-only secret. When set, **Write it with Grok** calls the xAI chat completions API at `https://api.x.ai/v1`. When empty, the form fills from comparable listings in the local store. The key is read only in `src/features/assistant/env.server.ts` and is never sent to the browser, returned, or logged. |
+| `XAI_MODEL` | Optional model id for that call. Defaults to `grok-4`. Also server-only. |
+
+`XAI_API_KEY` must not use a public browser prefix. Copy it into `.env.local` (gitignored) and leave `.env.example` empty.
 
 `AUTH_PROVIDER=supabase` will ask Supabase to email the link, then return through `src/app/auth/callback/route.ts`. That route still needs the code exchange before it can create a session. Until then, use `mock`.
 
@@ -94,4 +98,4 @@ Categories are Tickets (YSO, Harvard–Yale, concerts, other), Furniture, Textbo
 - **Seller reviews.** Completed orders and reviews are in the seed, and the profile page renders rating plus completed sales. `reviewSeller` in `src/features/reviews/actions.ts` is the write path. Add the form after a completed order.
 - **Resco-to-resco delivery.** `src/features/delivery` holds the handoff type. Colleges are already on every profile. Attach a handoff to an order, then show it on the listing page.
 - **Senior move-out.** `listings.seniorMoveOut` is live. Browse has the filter, and `/move-out` is the section. Scheduling, bundle splits, and a May countdown belong in `src/features/move-out`.
-- **Grok listing writing and price suggestions.** `ListingAssistantSlot` is mounted inside `src/features/listings/components/listing-form.tsx` and renders nothing. Replace `src/features/assistant/components/listing-assistant-slot.tsx` and keep the types in `src/features/assistant/index.ts`.
+- **Grok listing writing and price suggestions.** `ListingAssistantSlot` sits at the top of the create form. **Write it with Grok** calls `writeListingWithGrok`, which reads `XAI_API_KEY` on the server, sends the photo and notes plus comparable listings, and fills the title, description, category, condition, and price. With no key, `buildMockDraft` does the same job from campus comps.
