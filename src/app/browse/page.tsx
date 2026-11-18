@@ -13,6 +13,7 @@ import {
 } from "@/lib/categories";
 import { COLLEGES, isCollege } from "@/lib/colleges";
 import { queryListings, type BrowseFilters } from "@/lib/db/queries";
+import { CAMPUS_EVENTS, formatEventDate, getEvent, isEventId } from "@/lib/events";
 
 export const metadata = { title: "Browse" };
 
@@ -30,15 +31,23 @@ async function BrowseResults({ searchParams }: { searchParams: Promise<Search> }
   const raw = await searchParams;
   const filters = readFilters(raw);
   const cards = await queryListings(filters);
+  const event = filters.event ? getEvent(filters.event) : null;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-serif text-4xl text-yale">Browse</h1>
+          <h1 className="font-serif text-4xl text-yale">{event ? event.name : "Browse"}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {cards.length} listing{cards.length === 1 ? "" : "s"} from verified students.
+            {event
+              ? `${formatEventDate(event.date)} · ${event.active ? "On now" : "Not on the banner"} · ${event.blurb}`
+              : `${cards.length} listing${cards.length === 1 ? "" : "s"} from verified students.`}
           </p>
+          {event ? (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {cards.length} listing{cards.length === 1 ? "" : "s"}.
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -68,6 +77,14 @@ async function BrowseResults({ searchParams }: { searchParams: Promise<Search> }
           {COLLEGES.map((college) => (
             <option key={college} value={college}>
               {college}
+            </option>
+          ))}
+        </Select>
+        <Select name="event" label="Event" defaultValue={filters.event ?? ""}>
+          <option value="">Any event</option>
+          {CAMPUS_EVENTS.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.name}
             </option>
           ))}
         </Select>
@@ -147,5 +164,6 @@ function readFilters(raw: Search): BrowseFilters {
     type: type === "fixed" || type === "auction" ? type : "",
     sort: sort === "price_asc" || sort === "price_desc" ? sort : "newest",
     moveout: one("moveout") === "1" ? "1" : "",
+    event: isEventId(one("event") ?? "") ? one("event") : "",
   };
 }

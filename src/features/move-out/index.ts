@@ -1,10 +1,10 @@
 /**
- * Senior move-out.
- * Listings.seniorMoveOut is live, Browse can filter it, and /move-out is the section.
- * Next: pickup windows, bundle splitting, and a May countdown.
+ * Senior move-out is a campus event in src/lib/events.ts.
+ * Listings carry event "senior-move-out" (and the older seniorMoveOut flag).
+ * /move-out redirects to /browse?event=senior-move-out.
  */
 export const MOVE_OUT_PLUGIN = {
   id: "move-out",
-  entry: "src/app/move-out/page.tsx",
-  flag: "listings.seniorMoveOut",
+  entry: "src/lib/events.ts",
+  browse: "/browse?event=senior-move-out",
 } as const;

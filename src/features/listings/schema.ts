@@ -10,6 +10,7 @@ import {
   type ListingType,
   type TicketType,
 } from "@/lib/categories";
+import { derivedEventId, isEventId } from "@/lib/events";
 
 export type ListingInput = {
   title: string;
@@ -20,6 +21,7 @@ export type ListingInput = {
   condition: Condition;
   listingType: ListingType;
   seniorMoveOut: boolean;
+  event: string | null;
   auctionEndsAt: string | null;
 };
 
@@ -115,6 +117,9 @@ export function parseListingForm(formData: FormData): ListingParse {
       condition: value.condition,
       listingType: value.listingType,
       seniorMoveOut: value.seniorMoveOut,
+      event:
+        (isEventId(String(formData.get("event") ?? "")) ? String(formData.get("event")) : null) ??
+        derivedEventId({ ticketType, seniorMoveOut: value.seniorMoveOut }),
       auctionEndsAt,
     },
   };

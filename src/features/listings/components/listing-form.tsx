@@ -21,6 +21,7 @@ import {
   type Condition,
   type TicketType,
 } from "@/lib/categories";
+import { CAMPUS_EVENTS } from "@/lib/events";
 
 const fieldClass = "h-10 w-full rounded-lg border border-input bg-card px-3 text-sm";
 
@@ -211,6 +212,18 @@ export function ListingForm() {
             </div>
           ) : null}
         </fieldset>
+
+        <label className="block text-sm">
+          <span className="mb-1 block font-medium">Campus event</span>
+          <select name="event" defaultValue="" className={fieldClass}>
+            <option value="">None — tag it from the ticket type or move-out box</option>
+            {CAMPUS_EVENTS.map((event) => (
+              <option key={event.id} value={event.id}>
+                {event.name}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <label className="flex items-start gap-2 text-sm">
           <input

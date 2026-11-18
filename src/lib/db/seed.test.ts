@@ -12,7 +12,7 @@ describe("seed", () => {
       assert.equal(emails.has(account.email), true);
     }
     const active = store.listings.filter((listing) => listing.status === "active");
-    assert.ok(active.some((listing) => listing.ticketType === "harvard_yale"));
+    assert.ok(active.some((listing) => listing.ticketType === "harvard_yale" && listing.event === "harvard-yale"));
     assert.ok(active.some((listing) => listing.ticketType === "yso"));
     assert.ok(active.some((listing) => listing.seniorMoveOut));
     assert.ok(store.bids.length >= 2);

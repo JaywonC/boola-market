@@ -31,6 +31,8 @@ export type Listing = {
   listingType: ListingType;
   status: ListingStatus;
   seniorMoveOut: boolean;
+  /** Campus event slug from src/lib/events.ts, when this listing belongs to one. */
+  event?: string | null;
   auctionEndsAt: string | null;
   /** Set when an auction closes with a high bidder. */
   auctionWinnerId?: string | null;

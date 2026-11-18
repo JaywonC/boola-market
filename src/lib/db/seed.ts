@@ -1,4 +1,5 @@
 import { reviewHistorySeed } from "../../features/reviews/seed-history.mjs";
+import { derivedEventId } from "@/lib/events";
 import type { Listing, Order, Review, StoreData, User } from "@/lib/db/types";
 
 function listing(input: Listing): Listing {
@@ -81,6 +82,14 @@ const users: User[] = [
 ];
 
 export function buildSeed(): StoreData {
+  const seed = assembleSeed();
+  for (const item of seed.listings) {
+    item.event = item.event || derivedEventId(item);
+  }
+  return seed;
+}
+
+function assembleSeed(): StoreData {
   const history = reviewHistorySeed();
   return {
     version: 1,

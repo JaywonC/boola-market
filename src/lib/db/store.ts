@@ -9,6 +9,7 @@ import { evaluateThreadPost } from "@/features/messages/rules";
 import { evaluateOrder } from "@/features/orders/rules";
 import { evaluateReview } from "@/features/reviews/rules";
 import type { College } from "@/lib/colleges";
+import { derivedEventId } from "@/lib/events";
 import type {
   Bid,
   Conversation,
@@ -109,6 +110,15 @@ function normalizeStore(store: StoreData) {
     const hours = (end - Date.now()) / 36e5;
     if (!Number.isFinite(hours) || hours < 1 || hours > 6) {
       game.auctionEndsAt = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString();
+      changed = true;
+    }
+  }
+
+  for (const listing of store.listings) {
+    if (listing.event) continue;
+    const event = derivedEventId({ ...listing, event: null });
+    if (event) {
+      listing.event = event;
       changed = true;
     }
   }

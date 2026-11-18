@@ -7,6 +7,7 @@ import { ListingArt } from "@/features/listings/components/listing-art";
 import { ListingGrid } from "@/features/listings/components/listing-card";
 import { CATEGORY_IDS, CATEGORY_LABELS } from "@/lib/categories";
 import { getHomeFeed } from "@/lib/db/queries";
+import { formatEventDate } from "@/lib/events";
 import { formatRating } from "@/lib/format";
 
 export default function HomePage() {
@@ -36,7 +37,7 @@ export default function HomePage() {
             </Button>
           </form>
           <div className="mt-4 flex flex-wrap gap-3">
-            <Button variant="outline" className="h-10 bg-card px-4" render={<Link href="/browse?category=tickets&ticket=harvard_yale" />}>
+            <Button variant="outline" className="h-10 bg-card px-4" render={<Link href="/browse?event=harvard-yale" />}>
               Harvard–Yale tickets
             </Button>
             <Button variant="ghost" className="h-10 px-4" render={<Link href="/listings/new" />}>
@@ -117,22 +118,33 @@ async function HomeFeed() {
         </div>
       </section>
 
-      <section className="rounded-2xl bg-yale px-5 py-6 text-primary-foreground sm:px-8">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="font-serif text-3xl">Senior move-out</h2>
-            <p className="mt-1 max-w-xl text-sm text-primary-foreground/80">
-              Graduating seniors listing the loft, the rug, and the rest of the room. Filter anything marked move-out.
-            </p>
-          </div>
-          <Button variant="secondary" className="h-10" render={<Link href="/move-out" />}>
-            See move-out sales
-          </Button>
-        </div>
-        <div className="mt-5">
-          <ListingGrid cards={feed.moveOut} />
-        </div>
-      </section>
+      {feed.events.length > 0 ? (
+        <section className="rounded-2xl border border-border bg-card px-5 py-6 sm:px-8">
+          <h2 className="font-serif text-3xl text-yale">On campus now</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Seasonal shelves. Each one is a filtered browse view, not its own page.
+          </p>
+          <ul className="mt-4 grid gap-3 md:grid-cols-3">
+            {feed.events.map((event) => (
+              <li key={event.id}>
+                <Link
+                  href={`/browse?event=${event.id}`}
+                  className="block h-full rounded-xl bg-yale px-4 py-4 text-primary-foreground hover:bg-yale/90"
+                >
+                  <p className="text-xs tracking-[0.14em] text-primary-foreground/70 uppercase">
+                    {formatEventDate(event.date)}
+                  </p>
+                  <p className="mt-1 font-serif text-2xl">{event.name}</p>
+                  <p className="mt-2 text-sm text-primary-foreground/80">{event.blurb}</p>
+                  <p className="mt-3 text-sm font-medium">
+                    {event.count} listing{event.count === 1 ? "" : "s"}
+                  </p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section>
         <div className="mb-4 flex items-end justify-between gap-3">

@@ -14,7 +14,7 @@ export function SiteFooter() {
           <Link href="/browse" className="hover:underline">
             Browse
           </Link>
-          <Link href="/move-out" className="hover:underline">
+          <Link href="/browse?event=senior-move-out" className="hover:underline">
             Move-out
           </Link>
           <Link href="/couriers" className="hover:underline">

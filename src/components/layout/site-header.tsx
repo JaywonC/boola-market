@@ -27,13 +27,13 @@ export function SiteHeader() {
           <Link href="/browse" className="hover:text-yale">
             Browse
           </Link>
-          <Link href="/browse?category=tickets&ticket=harvard_yale" className="hover:text-yale">
+          <Link href="/browse?event=harvard-yale" className="hover:text-yale">
             Harvard–Yale
           </Link>
-          <Link href="/browse?category=tickets&ticket=yso" className="hover:text-yale">
+          <Link href="/browse?event=yso" className="hover:text-yale">
             YSO
           </Link>
-          <Link href="/move-out" className="hover:text-yale">
+          <Link href="/browse?event=senior-move-out" className="hover:text-yale">
             Senior move-out
           </Link>
           <Link href="/couriers" className="hover:text-yale">

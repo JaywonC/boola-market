@@ -16,9 +16,9 @@ import {
 const links = [
   { href: "/browse", label: "Browse" },
   { href: "/messages", label: "Messages", signedInOnly: true },
-  { href: "/browse?category=tickets&ticket=harvard_yale", label: "Harvard–Yale" },
-  { href: "/browse?category=tickets&ticket=yso", label: "YSO" },
-  { href: "/move-out", label: "Senior move-out" },
+  { href: "/browse?event=harvard-yale", label: "Harvard–Yale" },
+  { href: "/browse?event=yso", label: "YSO" },
+  { href: "/browse?event=senior-move-out", label: "Senior move-out" },
   { href: "/couriers", label: "Couriers" },
   { href: "/listings/new", label: "Sell something" },
 ];

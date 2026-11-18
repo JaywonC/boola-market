@@ -1,3 +1,4 @@
+import { activeEvents, derivedEventId } from "@/lib/events";
 import type { Bid, Listing, Message, Review, StoreData, User } from "@/lib/db/types";
 import { readStore, readStoreForRender } from "@/lib/db/store";
 
@@ -38,6 +39,7 @@ export type BrowseFilters = {
   college?: string;
   sort?: string;
   moveout?: string;
+  event?: string;
   status?: string;
 };
 
@@ -118,6 +120,10 @@ export async function getHomeFeed() {
     featured,
     moveOut,
     fresh,
+    events: activeEvents().map((event) => ({
+      ...event,
+      count: cards.filter((card) => derivedEventId(card.listing) === event.id).length,
+    })),
   };
 }
 
@@ -151,6 +157,9 @@ export async function queryListings(filters: BrowseFilters) {
   }
   if (filters.moveout === "1") {
     cards = cards.filter((card) => card.listing.seniorMoveOut);
+  }
+  if (filters.event) {
+    cards = cards.filter((card) => derivedEventId(card.listing) === filters.event);
   }
   if (q) {
     cards = cards.filter((card) => {
