@@ -11,6 +11,26 @@ Demo video (1 min): docs/demo.mp4
 
 [Watch the demo](docs/demo.mp4)
 
+## The problem
+
+Yale students buy and sell constantly — Harvard–Yale tickets, YSO Halloween show tickets, senior move-out furniture, textbooks — but today it happens on Fizz (anonymous, so you can't tell who you're paying, and scams happen), GroupMe and class chats (posts get buried, no reputation, no buyer protection), and Facebook Marketplace (not Yale-only, strangers, off-campus meetups). Tickets get scammed or wildly overpriced, and seniors dump good furniture at move-out.
+
+## Why Boola Market
+
+| | Boola Market | Fizz | GroupMe | Facebook Marketplace |
+| --- | --- | --- | --- | --- |
+| Verified Yale students only | ✅ | ⚠️ | ⚠️ | ❌ |
+| Seller reviews / reputation | ✅ | ❌ | ❌ | ⚠️ |
+| Auctions + fixed price | ✅ | ❌ | ❌ | ⚠️ |
+| Haggle in-app | ✅ | ❌ | ⚠️ | ⚠️ |
+| Campus delivery (resco-to-resco couriers, or pickup) | ✅ | ❌ | ⚠️ | ⚠️ |
+| Event tags (Harvard–Yale, YSO, move-out) | ✅ | ❌ | ❌ | ❌ |
+| AI listing writer (Grok) | ✅ | ❌ | ❌ | ❌ |
+
+- **Trust.** Every user is verified `@yale.edu`, and completed sales leave reviews.
+- **Fair prices.** Auctions find the real market price for hot tickets; haggling covers everything else.
+- **Convenience.** Fellow students deliver between residential colleges, and Grok writes a listing in seconds.
+
 ## What it does
 
 ### Yale-verified trusted accounts
