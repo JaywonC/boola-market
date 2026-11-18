@@ -52,13 +52,13 @@ export async function clearPendingLogin() {
 export async function readPendingLogin() {
   await connection();
   const jar = await cookies();
-  return readToken<PendingPayload>(jar.get(PENDING_COOKIE)?.value);
+  return readToken<PendingPayload>(jar.get(PENDING_COOKIE)?.value, Date.now());
 }
 
 export async function getCurrentUser() {
   await connection();
   const jar = await cookies();
-  const payload = readToken<SessionPayload>(jar.get(SESSION_COOKIE)?.value);
+  const payload = readToken<SessionPayload>(jar.get(SESSION_COOKIE)?.value, Date.now());
   if (!payload?.uid) return null;
   return getUserById(payload.uid);
 }

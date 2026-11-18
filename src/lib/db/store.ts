@@ -4,6 +4,7 @@ import path from "node:path";
 import { connection } from "next/server";
 
 import { evaluateBid } from "@/features/auctions/rules";
+import { settleExpiredAuctions } from "@/features/auctions/settle";
 import { evaluateThreadPost } from "@/features/messages/rules";
 import { evaluateOrder } from "@/features/orders/rules";
 import { evaluateReview } from "@/features/reviews/rules";
@@ -11,6 +12,7 @@ import type { College } from "@/lib/colleges";
 import type {
   Bid,
   Conversation,
+  Delivery,
   Listing,
   Message,
   Order,
@@ -46,15 +48,73 @@ async function load(): Promise<StoreData> {
     if (!parsed || !Array.isArray(parsed.users) || !Array.isArray(parsed.listings)) {
       throw new Error("The local store at data/store.json is unreadable. Delete it to reseed the demo.");
     }
+    if (normalizeStore(parsed)) await persist(parsed);
     return parsed;
   } catch (error) {
     const code = (error as NodeJS.ErrnoException).code;
     if (code !== "ENOENT") throw error;
     const seeded = buildSeed();
+    normalizeStore(seeded);
     await mkdir(path.dirname(FILE), { recursive: true });
     await writeFile(FILE, JSON.stringify(seeded, null, 2));
     return seeded;
   }
+}
+
+function normalizeStore(store: StoreData) {
+  let changed = false;
+  if (!Array.isArray(store.couriers)) {
+    store.couriers = [];
+    changed = true;
+  }
+  if (!Array.isArray(store.deliveries)) {
+    store.deliveries = [];
+    changed = true;
+  }
+  if (store.deliveries.length === 0 || store.couriers.length === 0) {
+    const seed = buildSeed();
+    for (const user of seed.users) {
+      if (!store.users.some((item) => item.id === user.id)) {
+        store.users.push(user);
+        changed = true;
+      }
+    }
+    for (const listing of seed.listings) {
+      if (!listing.id.startsWith("lst_drop_")) continue;
+      if (!store.listings.some((item) => item.id === listing.id)) {
+        store.listings.push(listing);
+        changed = true;
+      }
+    }
+    for (const order of seed.orders) {
+      if (!order.id.startsWith("ord_drop_")) continue;
+      if (!store.orders.some((item) => item.id === order.id)) {
+        store.orders.push(order);
+        changed = true;
+      }
+    }
+    if (store.couriers.length === 0) {
+      store.couriers = seed.couriers;
+      changed = true;
+    }
+    if (store.deliveries.length === 0) {
+      store.deliveries = seed.deliveries;
+      changed = true;
+    }
+  }
+
+  const game = store.listings.find((listing) => listing.id === "lst_game_pair");
+  if (game && game.status === "active" && game.listingType === "auction") {
+    const end = Date.parse(game.auctionEndsAt ?? "");
+    const hours = (end - Date.now()) / 36e5;
+    if (!Number.isFinite(hours) || hours < 1 || hours > 6) {
+      game.auctionEndsAt = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString();
+      changed = true;
+    }
+  }
+
+  if (settleExpiredAuctions(store, Date.now())) changed = true;
+  return changed;
 }
 
 async function persist(store: StoreData) {
@@ -370,6 +430,123 @@ export async function insertReview(input: {
     store.reviews.push(review);
     await persist(store);
     return { ok: true as const, review };
+  });
+}
+
+export async function createCollegeDelivery(input: {
+  listingId: string;
+  buyerId: string;
+  toCollege: College;
+  feeCents: number;
+  etaMinutes: number;
+  courierId: string | null;
+}) {
+  return withLock(async () => {
+    const store = await load();
+    const listing = store.listings.find((item) => item.id === input.listingId);
+    if (!listing) return { ok: false as const, error: "That listing is gone." };
+    const seller = store.users.find((user) => user.id === listing.sellerId);
+    if (!seller) return { ok: false as const, error: "That seller isn’t on file." };
+    if (listing.sellerId === input.buyerId) {
+      return { ok: false as const, error: "You can’t request delivery of your own listing." };
+    }
+    const duplicate = store.deliveries.some(
+      (delivery) =>
+        delivery.listingId === listing.id &&
+        delivery.buyerId === input.buyerId &&
+        delivery.status !== "cancelled",
+    );
+    if (duplicate) return { ok: false as const, error: "You already asked for delivery on this listing." };
+
+    const wonAuction =
+      listing.listingType === "auction" &&
+      listing.status === "sold" &&
+      listing.auctionWinnerId === input.buyerId;
+    const fixedOpen = listing.listingType === "fixed" && listing.status === "active";
+    if (!wonAuction && !fixedOpen) {
+      return {
+        ok: false as const,
+        error: "Delivery is for a fixed-price listing, or for the winner after an auction ends.",
+      };
+    }
+
+    let order = store.orders.find(
+      (item) => item.listingId === listing.id && item.buyerId === input.buyerId && item.status !== "cancelled",
+    );
+    if (!order) {
+      order = {
+        id: createId("ord"),
+        listingId: listing.id,
+        buyerId: input.buyerId,
+        sellerId: listing.sellerId,
+        priceCents: wonAuction
+          ? Math.max(listing.priceCents, ...store.bids.filter((bid) => bid.listingId === listing.id).map((bid) => bid.amountCents))
+          : listing.priceCents,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      };
+      store.orders.push(order);
+      if (fixedOpen) listing.status = "sold";
+    }
+
+    const delivery: Delivery = {
+      id: createId("del"),
+      orderId: order.id,
+      listingId: listing.id,
+      buyerId: input.buyerId,
+      sellerId: listing.sellerId,
+      fromCollege: seller.college,
+      toCollege: input.toCollege,
+      feeCents: input.feeCents,
+      etaMinutes: input.etaMinutes,
+      courierId: input.courierId,
+      status: input.courierId ? "accepted" : "open",
+      createdAt: new Date().toISOString(),
+      acceptedAt: input.courierId ? new Date().toISOString() : null,
+    };
+    store.deliveries.push(delivery);
+    await persist(store);
+    return { ok: true as const, delivery };
+  });
+}
+
+export async function becomeCourier(userId: string) {
+  return withLock(async () => {
+    const store = await load();
+    const existing = store.couriers.find((courier) => courier.userId === userId);
+    if (existing) {
+      existing.active = true;
+      await persist(store);
+      return existing;
+    }
+    const courier = {
+      userId,
+      active: true,
+      rating: null,
+      createdAt: new Date().toISOString(),
+    };
+    store.couriers.push(courier);
+    await persist(store);
+    return courier;
+  });
+}
+
+export async function acceptDelivery(deliveryId: string, courierUserId: string) {
+  return withLock(async () => {
+    const store = await load();
+    const delivery = store.deliveries.find((item) => item.id === deliveryId);
+    if (!delivery) return { ok: false as const, error: "That delivery is gone." };
+    if (delivery.status !== "open") return { ok: false as const, error: "Another courier already took this one." };
+    const courier = store.couriers.find((item) => item.userId === courierUserId && item.active);
+    if (!courier) return { ok: false as const, error: "Turn on courier mode before accepting a handoff." };
+    if (courierUserId === delivery.buyerId || courierUserId === delivery.sellerId) {
+      return { ok: false as const, error: "You can’t courier your own sale." };
+    }
+    delivery.courierId = courierUserId;
+    delivery.status = "accepted";
+    delivery.acceptedAt = new Date().toISOString();
+    await persist(store);
+    return { ok: true as const, delivery };
   });
 }
 

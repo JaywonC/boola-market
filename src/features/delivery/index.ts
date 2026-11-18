@@ -1,13 +1,13 @@
 /**
  * Resco-to-resco delivery.
- * Sellers already have a residential college. Add a handoff on the order,
- * then surface it on the listing page and the order record.
+ * Buyers request a walk on a fixed-price listing or after they win an auction.
+ * Couriers opt in at /couriers and accept open handoffs.
  */
 export const DELIVERY_PLUGIN = {
   id: "delivery",
-  status: "stub",
-  suggestedEntry: "src/app/listings/[id]/page.tsx",
-  dependsOn: "src/features/orders",
+  entry: "src/features/delivery/components/delivery-offer.tsx",
+  board: "src/app/couriers/page.tsx",
+  pricing: "src/features/delivery/pricing.ts",
 } as const;
 
 export type HandoffRequest = {

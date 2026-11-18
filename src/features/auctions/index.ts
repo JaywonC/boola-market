@@ -1,11 +1,11 @@
 /**
  * Live auctions.
- * Data and validation already exist. The listing page renders bid history.
- * Next: a bid form that calls placeBid, plus realtime updates and a shared countdown.
+ * The listing page mounts AuctionSection, which polls /api/auctions/[listingId].
+ * placeBid enforces a $5 minimum raise. settleExpiredAuctions records the winner.
  */
 export const AUCTIONS_PLUGIN = {
   id: "auctions",
-  entry: "src/features/auctions/components/bid-list.tsx",
+  entry: "src/features/auctions/components/auction-section.tsx",
   write: "src/features/auctions/actions.ts",
   rules: "src/features/auctions/rules.ts",
 } as const;

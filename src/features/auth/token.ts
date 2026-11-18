@@ -10,7 +10,7 @@ export function signToken(payload: Record<string, unknown>) {
   return `${body}.${signature}`;
 }
 
-export function readToken<T extends { exp: number }>(token: string | undefined | null): T | null {
+export function readToken<T extends { exp: number }>(token: string | undefined | null, nowMs: number): T | null {
   if (!token) return null;
   const [body, signature] = token.split(".");
   if (!body || !signature) return null;
@@ -20,7 +20,7 @@ export function readToken<T extends { exp: number }>(token: string | undefined |
   if (left.length !== right.length || !timingSafeEqual(left, right)) return null;
   try {
     const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as T;
-    if (!payload || typeof payload.exp !== "number" || payload.exp < Date.now()) return null;
+    if (!payload || typeof payload.exp !== "number" || payload.exp < nowMs) return null;
     return payload;
   } catch {
     return null;

@@ -19,5 +19,11 @@ describe("seed", () => {
     assert.ok(store.reviews.length >= 3);
     assert.ok(store.orders.some((order) => order.status === "completed"));
     assert.ok(store.messages.length >= 2);
+    const game = store.listings.find((listing) => listing.id === "lst_game_pair");
+    assert.ok(game?.auctionEndsAt);
+    const hours = (Date.parse(game.auctionEndsAt ?? "") - Date.now()) / 36e5;
+    assert.ok(hours > 3 && hours < 5);
+    assert.ok(store.couriers.length >= 2);
+    assert.ok(store.deliveries.some((delivery) => delivery.status === "open"));
   });
 });

@@ -5,7 +5,8 @@ import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { DetailSkeleton } from "@/components/layout/skeletons";
 import { getCurrentUser } from "@/features/auth/session";
-import { BidList } from "@/features/auctions/components/bid-list";
+import { AuctionSection } from "@/features/auctions/components/auction-section";
+import { DeliveryOffer } from "@/features/delivery/components/delivery-offer";
 import { ListingArt } from "@/features/listings/components/listing-art";
 import { ListingThreadPanel } from "@/features/messages/components/listing-thread-panel";
 import { ThreadPreview } from "@/features/messages/components/thread-preview";
@@ -17,16 +18,31 @@ import { categoryLabel, CONDITION_LABELS } from "@/lib/categories";
 import { getListingDetail } from "@/lib/db/queries";
 import { formatAuctionEnd, formatDate, formatMoney } from "@/lib/format";
 
-export default function ListingPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ListingPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   return (
     <Suspense fallback={<DetailSkeleton />}>
-      <ListingBody params={params} />
+      <ListingBody params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function ListingBody({ params }: { params: Promise<{ id: string }> }) {
+async function ListingBody({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { id } = await params;
+  const query = await searchParams;
+  const deliveryFlag = Array.isArray(query.delivery) ? query.delivery[0] : query.delivery;
+  const bidErrorRaw = Array.isArray(query.bidError) ? query.bidError[0] : query.bidError;
   const detail = await getListingDetail(id);
   if (!detail) notFound();
   const viewer = await getCurrentUser();
@@ -67,7 +83,9 @@ async function ListingBody({ params }: { params: Promise<{ id: string }> }) {
           <p className="mt-3 text-sm text-muted-foreground">Listed {formatDate(listing.createdAt)}</p>
           <p className="mt-5 max-w-2xl text-base leading-7 whitespace-pre-wrap">{listing.description}</p>
         </div>
-        <BidList detail={detail} />
+        {listing.listingType === "auction" ? (
+          <AuctionSection listingId={listing.id} bidError={bidErrorRaw || undefined} />
+        ) : null}
         <ThreadPreview detail={detail} />
       </div>
       <aside className="h-fit space-y-4 lg:sticky lg:top-28">
@@ -98,6 +116,7 @@ async function ListingBody({ params }: { params: Promise<{ id: string }> }) {
             viewer={viewer ? { id: viewer.id, name: viewer.name } : null}
           />
         </div>
+        <DeliveryOffer listingId={listing.id} requested={deliveryFlag === "requested"} />
         <div className="rounded-xl border border-border bg-card p-5">
           <p className="text-xs tracking-wide text-muted-foreground uppercase">Seller</p>
           <TrustBadge

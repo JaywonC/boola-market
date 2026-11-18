@@ -36,6 +36,9 @@ export function SiteHeader() {
           <Link href="/move-out" className="hover:text-yale">
             Senior move-out
           </Link>
+          <Link href="/couriers" className="hover:text-yale">
+            Couriers
+          </Link>
         </nav>
         <div className="ml-auto flex items-center gap-2">
           <Button

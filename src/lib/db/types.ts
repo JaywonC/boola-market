@@ -32,6 +32,8 @@ export type Listing = {
   status: ListingStatus;
   seniorMoveOut: boolean;
   auctionEndsAt: string | null;
+  /** Set when an auction closes with a high bidder. */
+  auctionWinnerId?: string | null;
   createdAt: string;
 };
 
@@ -71,6 +73,31 @@ export type Order = {
   createdAt: string;
 };
 
+export type Courier = {
+  userId: string;
+  active: boolean;
+  rating: number | null;
+  createdAt: string;
+};
+
+export type DeliveryStatus = "open" | "accepted" | "completed" | "cancelled";
+
+export type Delivery = {
+  id: string;
+  orderId: string;
+  listingId: string;
+  buyerId: string;
+  sellerId: string;
+  fromCollege: College;
+  toCollege: College;
+  feeCents: number;
+  etaMinutes: number;
+  courierId: string | null;
+  status: DeliveryStatus;
+  createdAt: string;
+  acceptedAt: string | null;
+};
+
 export type Review = {
   id: string;
   orderId: string;
@@ -90,4 +117,6 @@ export type StoreData = {
   messages: Message[];
   orders: Order[];
   reviews: Review[];
+  couriers: Courier[];
+  deliveries: Delivery[];
 };

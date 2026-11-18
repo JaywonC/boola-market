@@ -19,6 +19,7 @@ const links = [
   { href: "/browse?category=tickets&ticket=harvard_yale", label: "Harvard–Yale" },
   { href: "/browse?category=tickets&ticket=yso", label: "YSO" },
   { href: "/move-out", label: "Senior move-out" },
+  { href: "/couriers", label: "Couriers" },
   { href: "/listings/new", label: "Sell something" },
 ];
 

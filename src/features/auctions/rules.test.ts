@@ -25,6 +25,13 @@ describe("evaluateBid", () => {
     assert.equal(decision.ok, false);
   });
 
+  it("requires a five dollar raise", () => {
+    const low = evaluateBid({ ...base, amountCents: 17400 });
+    assert.equal(low.ok, false);
+    if (!low.ok) assert.match(low.reason, /minimum raise is \$5/);
+    assert.deepEqual(evaluateBid({ ...base, amountCents: 17500 }), { ok: true });
+  });
+
   it("requires the starting price when nobody has bid", () => {
     const decision = evaluateBid({ ...base, highestBidCents: null, amountCents: 10000 });
     assert.equal(decision.ok, false);

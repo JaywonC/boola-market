@@ -7,7 +7,7 @@ export function SiteFooter() {
         <div>
           <p className="font-serif text-xl">Yale Marketplace</p>
           <p className="mt-1 max-w-md text-sm text-primary-foreground/80">
-            A campus market for students with a @yale.edu address. Pickup on the way between colleges. Resco-to-resco handoff is the next step.
+            A campus market for students with a @yale.edu address. Student couriers walk purchases from one residential college to another.
           </p>
         </div>
         <div className="flex gap-4 text-sm">
@@ -16,6 +16,9 @@ export function SiteFooter() {
           </Link>
           <Link href="/move-out" className="hover:underline">
             Move-out
+          </Link>
+          <Link href="/couriers" className="hover:underline">
+            Couriers
           </Link>
           <Link href="/listings/new" className="hover:underline">
             Sell
