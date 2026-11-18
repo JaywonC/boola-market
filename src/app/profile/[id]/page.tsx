@@ -5,6 +5,8 @@ import { DetailSkeleton } from "@/components/layout/skeletons";
 import { ListingGrid } from "@/features/listings/components/listing-card";
 import { Person } from "@/features/profiles/components/person";
 import { Stars } from "@/features/profiles/components/stars";
+import { SellerReviews } from "@/features/reviews/components/seller-reviews";
+import { VerifiedYalie } from "@/features/reviews/components/verified-yalie";
 import { getProfile } from "@/lib/db/queries";
 import { formatDate } from "@/lib/format";
 
@@ -30,6 +32,7 @@ async function ProfileBody({ params }: { params: Promise<{ id: string }> }) {
           reviewCount={profile.reviewCount}
           sales={profile.completedSales}
         />
+        <VerifiedYalie college={profile.user.college} graduationYear={profile.user.graduationYear} />
         <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div>
             <dt className="text-xs tracking-wide text-muted-foreground uppercase">Rating</dt>
@@ -49,6 +52,13 @@ async function ProfileBody({ params }: { params: Promise<{ id: string }> }) {
         <p className="mt-4 text-sm text-muted-foreground">{profile.user.email}</p>
       </section>
 
+      <SellerReviews
+        sellerId={profile.user.id}
+        rating={profile.rating}
+        reviewCount={profile.reviewCount}
+        reviews={profile.reviews}
+      />
+
       <section className="mt-10">
         <h2 className="font-serif text-3xl text-yale">Listings</h2>
         <div className="mt-4">
@@ -58,25 +68,6 @@ async function ProfileBody({ params }: { params: Promise<{ id: string }> }) {
             <ListingGrid cards={profile.listings} />
           )}
         </div>
-      </section>
-
-      <section className="mt-10">
-        <h2 className="font-serif text-3xl text-yale">Reviews from buyers</h2>
-        {profile.reviews.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">No reviews yet. Ratings show up after a completed sale.</p>
-        ) : (
-          <ul className="mt-4 space-y-3">
-            {profile.reviews.map((review) => (
-              <li key={review.id} className="rounded-xl border border-border bg-card p-4">
-                <Stars rating={review.rating} />
-                <p className="mt-2 text-sm leading-6">{review.body}</p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {review.reviewer.name} · {review.listingTitle} · {formatDate(review.createdAt)}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
       </section>
     </div>
   );
