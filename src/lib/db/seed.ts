@@ -1,4 +1,5 @@
-import type { Listing, StoreData, User } from "@/lib/db/types";
+import { reviewHistorySeed } from "../../features/reviews/seed-history.mjs";
+import type { Listing, Order, Review, StoreData, User } from "@/lib/db/types";
 
 function listing(input: Listing): Listing {
   return input;
@@ -71,6 +72,7 @@ const users: User[] = [
 ];
 
 export function buildSeed(): StoreData {
+  const history = reviewHistorySeed();
   return {
     version: 1,
     users,
@@ -378,6 +380,7 @@ export function buildSeed(): StoreData {
         auctionEndsAt: null,
         createdAt: "2026-10-15T18:10:00.000Z",
       }),
+      ...(history.listings as Listing[]),
     ],
     bids: [
       {
@@ -532,6 +535,7 @@ export function buildSeed(): StoreData {
         status: "completed",
         createdAt: "2026-10-16T15:45:00.000Z",
       },
+      ...(history.orders as Order[]),
     ],
     reviews: [
       {
@@ -570,6 +574,7 @@ export function buildSeed(): StoreData {
         body: "Lamp works, cord is fine, and Chris walked it over to Pierson.",
         createdAt: "2026-10-16T17:05:00.000Z",
       },
+      ...(history.reviews as Review[]),
     ],
   };
 }
