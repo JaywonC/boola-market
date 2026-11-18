@@ -13,7 +13,7 @@ const users: User[] = [
     name: "Maya Chen",
     college: "Grace Hopper",
     graduationYear: 2027,
-    avatarUrl: null,
+    avatarUrl: "/photos/maya.jpg",
     createdAt: "2026-09-02T15:00:00.000Z",
   },
   {
@@ -22,7 +22,7 @@ const users: User[] = [
     name: "Jordan Hale",
     college: "Timothy Dwight",
     graduationYear: 2027,
-    avatarUrl: null,
+    avatarUrl: "/photos/jordan.jpg",
     createdAt: "2026-09-04T15:00:00.000Z",
   },
   {
@@ -31,7 +31,7 @@ const users: User[] = [
     name: "Priya Shah",
     college: "Silliman",
     graduationYear: 2027,
-    avatarUrl: null,
+    avatarUrl: "/photos/priya.jpg",
     createdAt: "2026-09-08T15:00:00.000Z",
   },
   {
@@ -40,7 +40,7 @@ const users: User[] = [
     name: "Alex Okonkwo",
     college: "Pierson",
     graduationYear: 2029,
-    avatarUrl: null,
+    avatarUrl: "/photos/alex.jpg",
     createdAt: "2026-09-12T15:00:00.000Z",
   },
   {
@@ -49,7 +49,7 @@ const users: User[] = [
     name: "Sam Rivera",
     college: "Berkeley",
     graduationYear: 2028,
-    avatarUrl: null,
+    avatarUrl: "/photos/sam.jpg",
     createdAt: "2026-09-18T15:00:00.000Z",
   },
   {
@@ -58,7 +58,7 @@ const users: User[] = [
     name: "Elena Voss",
     college: "Morse",
     graduationYear: 2027,
-    avatarUrl: null,
+    avatarUrl: "/photos/elena.jpg",
     createdAt: "2026-10-01T15:00:00.000Z",
   },
   {
@@ -67,7 +67,7 @@ const users: User[] = [
     name: "Chris Adeyemi",
     college: "Branford",
     graduationYear: 2028,
-    avatarUrl: null,
+    avatarUrl: "/photos/chris.jpg",
     createdAt: "2026-10-03T15:00:00.000Z",
   },
   {
@@ -76,7 +76,7 @@ const users: User[] = [
     name: "Riley Park",
     college: "Davenport",
     graduationYear: 2028,
-    avatarUrl: null,
+    avatarUrl: "/photos/riley.jpg",
     createdAt: "2026-10-06T15:00:00.000Z",
   },
 ];
@@ -94,6 +94,7 @@ const STOCK_PHOTOS: Array<[RegExp, string]> = [
   [/mug/i, "/photos/mug.jpg"],
   [/loft|ladder/i, "/photos/bed.jpg"],
   [/poster|print|frame|organizer|lights/i, "/photos/poster.jpg"],
+  [/lock|key|bike/i, "/photos/lock.jpg"],
 ];
 
 export function buildSeed(): StoreData {
@@ -101,8 +102,8 @@ export function buildSeed(): StoreData {
   for (const item of seed.listings) {
     item.event = item.event || derivedEventId(item);
     if (item.category === "tickets" || item.photos.length > 0) continue;
-    const photo = STOCK_PHOTOS.find(([pattern]) => pattern.test(item.title));
-    if (photo) item.photos = [photo[1]];
+    const photo = STOCK_PHOTOS.find(([pattern]) => pattern.test(`${item.title} ${item.description}`));
+    item.photos = [photo ? photo[1] : "/photos/couch.jpg"];
   }
   return seed;
 }

@@ -132,6 +132,13 @@ function normalizeStore(store: StoreData) {
       }
     }
   }
+  for (const user of store.users) {
+    if (user.avatarUrl) continue;
+    const seededUser = seeded.users.find((item) => item.id === user.id);
+    if (!seededUser?.avatarUrl) continue;
+    user.avatarUrl = seededUser.avatarUrl;
+    changed = true;
+  }
 
   if (settleExpiredAuctions(store, Date.now())) changed = true;
   return changed;

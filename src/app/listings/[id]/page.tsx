@@ -60,10 +60,20 @@ async function ListingBody({
       <div className="space-y-6">
         <div className="overflow-hidden rounded-2xl border border-border bg-card">
           {listing.photos.length > 0 ? (
-            <div className="grid gap-2 sm:grid-cols-2">
-              {listing.photos.map((photo) => (
-                <div key={photo} className="relative aspect-[4/3]">
-                  <Image src={photo} alt="" fill className="object-cover" sizes="(min-width: 1024px) 50vw, 100vw" />
+            <div className={listing.photos.length > 1 ? "grid gap-2 sm:grid-cols-2" : ""}>
+              {listing.photos.map((photo, index) => (
+                <div
+                  key={photo}
+                  className={`relative aspect-[4/3] ${index === 0 ? "sm:aspect-[16/10] sm:col-span-2" : ""}`}
+                >
+                  <Image
+                    src={photo}
+                    alt={listing.title}
+                    fill
+                    priority={index === 0}
+                    className="object-cover"
+                    sizes="(min-width: 1024px) 720px, 100vw"
+                  />
                 </div>
               ))}
             </div>

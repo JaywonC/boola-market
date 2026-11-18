@@ -31,6 +31,7 @@ async function ProfileBody({ params }: { params: Promise<{ id: string }> }) {
           rating={profile.rating}
           reviewCount={profile.reviewCount}
           sales={profile.completedSales}
+          large
         />
         <VerifiedYalie college={profile.user.college} graduationYear={profile.user.graduationYear} />
         <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
