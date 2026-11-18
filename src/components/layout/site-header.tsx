@@ -21,7 +21,7 @@ export function SiteHeader() {
           <span className="grid size-9 place-items-center rounded-lg bg-yale font-serif text-lg text-primary-foreground">
             Y
           </span>
-          <span className="font-serif text-xl tracking-tight text-yale">Yale Marketplace</span>
+          <span className="font-serif text-xl tracking-tight text-yale">Boola Market</span>
         </Link>
         <nav className="ml-4 hidden items-center gap-5 text-sm md:flex">
           <Link href="/browse" className="hover:text-yale">

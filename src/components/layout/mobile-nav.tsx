@@ -35,7 +35,7 @@ export function MobileNav({ signedIn }: { signedIn: boolean }) {
       </SheetTrigger>
       <SheetContent side="left" className="bg-card">
         <SheetHeader>
-          <SheetTitle className="font-serif text-yale">Yale Marketplace</SheetTitle>
+          <SheetTitle className="font-serif text-yale">Boola Market</SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col gap-1 px-4">
           {links

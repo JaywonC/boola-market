@@ -1,5 +1,5 @@
 /**
- * Data access for Yale Marketplace.
+ * Data access for Boola Market.
  *
  * DATA_PROVIDER=local (default) uses data/store.json, created from src/lib/db/seed.ts
  * on first read. DATA_PROVIDER=supabase is reserved for src/lib/db/supabase.ts.

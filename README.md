@@ -1,6 +1,6 @@
-Yale Marketplace is a trusted campus market where only @yale.edu students list, auction, haggle, and courier goods between residential colleges.
+Where Yale's supply meets Yale's demand.
 
-# Yale Marketplace
+# Boola Market
 
 **y/cs × SpaceXSI Grokathon** · Yale · November 17, 2026  
 Team: Jaywon, Casper, Justin

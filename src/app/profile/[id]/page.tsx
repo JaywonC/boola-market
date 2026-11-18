@@ -46,7 +46,7 @@ async function ProfileBody({ params }: { params: Promise<{ id: string }> }) {
             <dd className="mt-1 font-serif text-3xl text-yale">{profile.completedSales}</dd>
           </div>
           <div>
-            <dt className="text-xs tracking-wide text-muted-foreground uppercase">On Yale Marketplace</dt>
+            <dt className="text-xs tracking-wide text-muted-foreground uppercase">On Boola Market</dt>
             <dd className="mt-1 text-sm">{formatDate(profile.user.createdAt)}</dd>
           </div>
         </dl>

@@ -18,7 +18,7 @@ export default function HomePage() {
             The ticket that never hits the group chat.
           </h1>
           <p className="mt-4 max-w-xl text-lg leading-7 text-muted-foreground">
-            Yale Marketplace is only for @yale.edu. Every seller has a residential college, a class year, and a rating from students who already bought from them — whether it’s The Game, a YSO seat, or a mini-fridge on the third floor of Pierson.
+            Boola Market is only for @yale.edu. Every seller has a residential college, a class year, and a rating from students who already bought from them — whether it’s The Game, a YSO seat, or a mini-fridge on the third floor of Pierson.
           </p>
           <form action="/browse" className="mt-6 flex flex-col gap-2 sm:flex-row">
             <label className="sr-only" htmlFor="home-search">

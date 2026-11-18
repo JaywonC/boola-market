@@ -1,4 +1,4 @@
--- Yale Marketplace foundation schema.
+-- Boola Market foundation schema.
 -- Matches the TypeScript model in src/lib/db/types.ts.
 -- Primary keys are text so the local demo ids (usr_maya, lst_game_student)
 -- and future Supabase ids can share one shape. When AUTH_PROVIDER=supabase,

@@ -19,8 +19,8 @@ const serif = Fraunces({
 
 export const metadata: Metadata = {
   title: {
-    default: "Yale Marketplace",
-    template: "%s · Yale Marketplace",
+    default: "Boola Market",
+    template: "%s · Boola Market",
   },
   description:
     "A trusted marketplace for Yale students. Verified @yale.edu accounts, seller ratings, and the tickets that never last in the group chat.",
