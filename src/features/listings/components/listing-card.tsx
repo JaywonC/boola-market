@@ -25,7 +25,7 @@ export function ListingCard({ card }: { card: ListingCardModel }) {
           {listing.photos[0] ? (
             <Image
               src={listing.photos[0]}
-              alt=""
+              alt={listing.title}
               fill
               sizes="(min-width: 1024px) 320px, (min-width: 640px) 50vw, 100vw"
               className="object-cover"

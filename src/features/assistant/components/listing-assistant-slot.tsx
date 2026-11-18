@@ -78,7 +78,18 @@ export function ListingAssistantSlot({
 
       <div className="mt-4 grid gap-4 sm:grid-cols-[180px_minmax(0,1fr)]">
         <div className="space-y-2">
-          <Label htmlFor="photos">Photo</Label>
+          <Label htmlFor="photos">Listing photo</Label>
+          <label
+            htmlFor="photos"
+            className="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-border bg-background text-center"
+          >
+            {previewUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- local object URL from the seller’s file
+              <img src={previewUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="px-3 text-xs text-muted-foreground">Add a photo of the thing</span>
+            )}
+          </label>
           <input
             ref={photosRef}
             id="photos"
@@ -89,13 +100,9 @@ export function ListingAssistantSlot({
             onChange={onPhotoChange}
             className="block w-full text-xs text-muted-foreground file:mr-2 file:rounded-md file:border-0 file:bg-secondary file:px-2 file:py-1 file:text-xs file:font-medium file:text-secondary-foreground"
           />
-          {previewUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- local object URL from the seller’s file
-            <img src={previewUrl} alt="" className="h-24 w-full rounded-lg object-cover" />
-          ) : null}
           <p className="text-xs text-muted-foreground">
-            {photoName ? `Grok looks at ${photoName}. ` : ""}
-            Optional. Up to four images, 2 MB each. These are the listing photos.
+            {photoName ? `${photoName}. ` : ""}
+            This photo is what buyers see. Up to four images, 2 MB each.
           </p>
           {photoError ? <p className="text-sm text-destructive">{photoError}</p> : null}
         </div>

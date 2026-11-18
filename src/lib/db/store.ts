@@ -114,13 +114,30 @@ function normalizeStore(store: StoreData) {
     }
   }
 
+  const seeded = buildSeed();
+  const seededPhotos = new Map(seeded.listings.filter((item) => item.photos.length > 0).map((item) => [item.id, item.photos]));
   for (const listing of store.listings) {
-    if (listing.event) continue;
-    const event = derivedEventId({ ...listing, event: null });
-    if (event) {
-      listing.event = event;
-      changed = true;
+    if (!listing.event) {
+      const event = derivedEventId({ ...listing, event: null });
+      if (event) {
+        listing.event = event;
+        changed = true;
+      }
     }
+    if (listing.photos.length === 0) {
+      const photos = seededPhotos.get(listing.id);
+      if (photos) {
+        listing.photos = [...photos];
+        changed = true;
+      }
+    }
+  }
+  for (const user of store.users) {
+    if (user.avatarUrl) continue;
+    const seededUser = seeded.users.find((item) => item.id === user.id);
+    if (!seededUser?.avatarUrl) continue;
+    user.avatarUrl = seededUser.avatarUrl;
+    changed = true;
   }
 
   if (settleExpiredAuctions(store, Date.now())) changed = true;

@@ -7,16 +7,14 @@ import { ListingArt } from "@/features/listings/components/listing-art";
 import { ListingGrid } from "@/features/listings/components/listing-card";
 import { CATEGORY_IDS, CATEGORY_LABELS } from "@/lib/categories";
 import { getHomeFeed } from "@/lib/db/queries";
-import { formatEventDate } from "@/lib/events";
-import { formatRating } from "@/lib/format";
+import { daysUntil, formatEventDate, formatEventWeekday, getEvent } from "@/lib/events";
 
 export default function HomePage() {
   return (
     <div>
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)] lg:py-16">
         <div>
-          <p className="text-xs font-medium tracking-[0.18em] text-brass uppercase">The trusted campus market</p>
-          <h1 className="mt-3 max-w-xl font-serif text-4xl leading-[1.05] text-yale sm:text-6xl">
+          <h1 className="max-w-xl font-serif text-4xl leading-[1.05] text-yale sm:text-6xl">
             The ticket that never hits the group chat.
           </h1>
           <p className="mt-4 max-w-xl text-lg leading-7 text-muted-foreground">
@@ -83,12 +81,7 @@ async function HomeFeed() {
   const feed = await getHomeFeed();
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4">
-      <dl className="grid grid-cols-2 gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-4">
-        <Stat label="Verified students" value={String(feed.stats.students)} />
-        <Stat label="Active listings" value={String(feed.stats.activeListings)} />
-        <Stat label="Completed sales" value={String(feed.stats.completedSales)} />
-        <Stat label="Average rating" value={formatRating(feed.stats.averageRating) ?? "—"} />
-      </dl>
+      <GameCountdown />
 
       <section>
         <div className="mb-4 flex items-end justify-between gap-3">
@@ -159,12 +152,29 @@ async function HomeFeed() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function GameCountdown() {
+  const event = getEvent("harvard-yale");
+  if (!event) return null;
+  const days = daysUntil(event.date);
+  if (days === null) return null;
+  const when =
+    days > 1
+      ? `Harvard–Yale is in ${days} days`
+      : days === 1
+        ? "Harvard–Yale is tomorrow"
+        : days === 0
+          ? "Harvard–Yale is today"
+          : `Harvard–Yale was ${formatEventDate(event.date)}`;
   return (
-    <div>
-      <dt className="text-xs tracking-wide text-muted-foreground uppercase">{label}</dt>
-      <dd className="mt-1 font-serif text-3xl text-yale">{value}</dd>
-    </div>
+    <p className="text-base text-yale">
+      <Link href="/browse?event=harvard-yale" className="font-medium hover:underline">
+        {when}
+      </Link>
+      <span className="text-muted-foreground">
+        {" "}
+        · {formatEventWeekday(event.date)} at the Bowl
+      </span>
+    </p>
   );
 }
 
