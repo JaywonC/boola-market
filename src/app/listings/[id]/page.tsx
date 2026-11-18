@@ -11,6 +11,8 @@ import { ListingThreadPanel } from "@/features/messages/components/listing-threa
 import { ThreadPreview } from "@/features/messages/components/thread-preview";
 import { annotateThread } from "@/features/messages/rules";
 import { Person } from "@/features/profiles/components/person";
+import { ListingReviewPrompt } from "@/features/reviews/components/listing-review-prompt";
+import { TrustBadge } from "@/features/reviews/components/trust-badge";
 import { categoryLabel, CONDITION_LABELS } from "@/lib/categories";
 import { getListingDetail } from "@/lib/db/queries";
 import { formatAuctionEnd, formatDate, formatMoney } from "@/lib/format";
@@ -97,14 +99,22 @@ async function ListingBody({ params }: { params: Promise<{ id: string }> }) {
           />
         </div>
         <div className="rounded-xl border border-border bg-card p-5">
-          <p className="mb-3 text-xs tracking-wide text-muted-foreground uppercase">Seller</p>
-          <Person
-            user={detail.seller}
+          <p className="text-xs tracking-wide text-muted-foreground uppercase">Seller</p>
+          <TrustBadge
             rating={detail.sellerRating}
-            reviewCount={detail.sellerReviewCount}
             sales={detail.sellerSales}
-            href={`/profile/${detail.seller.id}`}
+            className="mt-3"
           />
+          <div className="mt-4">
+            <Person
+              user={detail.seller}
+              rating={detail.sellerRating}
+              reviewCount={detail.sellerReviewCount}
+              sales={detail.sellerSales}
+              href={`/profile/${detail.seller.id}`}
+            />
+          </div>
+          <ListingReviewPrompt listingId={listing.id} />
         </div>
       </aside>
     </article>

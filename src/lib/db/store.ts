@@ -352,7 +352,9 @@ export async function insertReview(input: {
       orderStatus: order.status,
       buyerId: order.buyerId,
       reviewerId: input.reviewerId,
+      sellerId: order.sellerId,
       rating: input.rating,
+      body: input.body,
       alreadyReviewed: store.reviews.some((review) => review.orderId === order.id),
     });
     if (!decision.ok) return decision;

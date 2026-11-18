@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 import { getUserById } from "@/lib/db/queries";
 import { readToken, signToken } from "@/features/auth/token";
@@ -49,11 +50,13 @@ export async function clearPendingLogin() {
 }
 
 export async function readPendingLogin() {
+  await connection();
   const jar = await cookies();
   return readToken<PendingPayload>(jar.get(PENDING_COOKIE)?.value);
 }
 
 export async function getCurrentUser() {
+  await connection();
   const jar = await cookies();
   const payload = readToken<SessionPayload>(jar.get(SESSION_COOKIE)?.value);
   if (!payload?.uid) return null;

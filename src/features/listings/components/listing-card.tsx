@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ListingArt } from "@/features/listings/components/listing-art";
-import { Stars } from "@/features/profiles/components/stars";
+import { TrustBadge } from "@/features/reviews/components/trust-badge";
 import { categoryLabel, CONDITION_LABELS } from "@/lib/categories";
 import type { ListingCard as ListingCardModel } from "@/lib/db/queries";
 import { classYear, formatAuctionEnd, formatMoney } from "@/lib/format";
@@ -57,11 +57,11 @@ export function ListingCard({ card }: { card: ListingCardModel }) {
             {listing.listingType === "auction" ? ` · ${formatAuctionEnd(listing.auctionEndsAt)}` : ""}
             {listing.status === "sold" ? " · Sold" : ""}
           </p>
-          <div className="mt-auto flex items-center justify-between gap-2 pt-2 text-sm">
-            <span className="truncate text-muted-foreground">
+          <div className="mt-auto space-y-2 pt-2">
+            <p className="truncate text-sm text-muted-foreground">
               {seller.college} {classYear(seller.graduationYear)}
-            </span>
-            <Stars rating={card.sellerRating} />
+            </p>
+            <TrustBadge rating={card.sellerRating} sales={card.sellerSales} />
           </div>
         </div>
       </Card>
