@@ -114,12 +114,22 @@ function normalizeStore(store: StoreData) {
     }
   }
 
+  const seeded = buildSeed();
+  const seededPhotos = new Map(seeded.listings.filter((item) => item.photos.length > 0).map((item) => [item.id, item.photos]));
   for (const listing of store.listings) {
-    if (listing.event) continue;
-    const event = derivedEventId({ ...listing, event: null });
-    if (event) {
-      listing.event = event;
-      changed = true;
+    if (!listing.event) {
+      const event = derivedEventId({ ...listing, event: null });
+      if (event) {
+        listing.event = event;
+        changed = true;
+      }
+    }
+    if (listing.photos.length === 0) {
+      const photos = seededPhotos.get(listing.id);
+      if (photos) {
+        listing.photos = [...photos];
+        changed = true;
+      }
     }
   }
 

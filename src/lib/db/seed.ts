@@ -81,10 +81,28 @@ const users: User[] = [
   },
 ];
 
+const STOCK_PHOTOS: Array<[RegExp, string]> = [
+  [/fridge/i, "/photos/fridge.jpg"],
+  [/lamp/i, "/photos/lamp.jpg"],
+  [/rug/i, "/photos/rug.jpg"],
+  [/bookcase|bundle|mirror|couch|sofa/i, "/photos/couch.jpg"],
+  [/textbook|klein|econ|math|notes|manual/i, "/photos/textbooks.jpg"],
+  [/monitor|laptop|headphone|speaker|hdmi|stand/i, "/photos/monitor.jpg"],
+  [/crewneck|sweater|hoodie|beanie|quarter-zip/i, "/photos/sweater.jpg"],
+  [/dress|heels/i, "/photos/dress.jpg"],
+  [/chair/i, "/photos/chair.jpg"],
+  [/mug/i, "/photos/mug.jpg"],
+  [/loft|ladder/i, "/photos/bed.jpg"],
+  [/poster|print|frame|organizer|lights/i, "/photos/poster.jpg"],
+];
+
 export function buildSeed(): StoreData {
   const seed = assembleSeed();
   for (const item of seed.listings) {
     item.event = item.event || derivedEventId(item);
+    if (item.category === "tickets" || item.photos.length > 0) continue;
+    const photo = STOCK_PHOTOS.find(([pattern]) => pattern.test(item.title));
+    if (photo) item.photos = [photo[1]];
   }
   return seed;
 }
