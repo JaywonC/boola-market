@@ -49,6 +49,8 @@ export type Conversation = {
   buyerId: string;
   sellerId: string;
   createdAt: string;
+  buyerLastReadAt?: string;
+  sellerLastReadAt?: string;
 };
 
 export type Message = {

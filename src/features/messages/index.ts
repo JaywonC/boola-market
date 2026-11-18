@@ -1,6 +1,7 @@
 /**
  * Haggling chat.
- * Threads are stored and shown on the listing page. Next: a composer that calls sendMessage.
+ * Buyers open a thread from Message seller on a fixed-price listing.
+ * The inbox is /messages, and the thread polls for new offers.
  */
 export const MESSAGES_PLUGIN = {
   id: "messages",
@@ -9,4 +10,4 @@ export const MESSAGES_PLUGIN = {
   rules: "src/features/messages/rules.ts",
 } as const;
 
-export { evaluateMessage } from "@/features/messages/rules";
+export { evaluateMessage, evaluateThreadPost } from "@/features/messages/rules";

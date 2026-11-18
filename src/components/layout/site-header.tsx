@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { UserMenu } from "@/components/layout/user-menu";
 import { getCurrentUser } from "@/features/auth/session";
+import { MessagesNavLink } from "@/features/messages/components/messages-nav-link";
 
 export function SiteHeader() {
   return (
@@ -57,7 +58,12 @@ async function HeaderAuth() {
   return (
     <>
       {user ? (
-        <UserMenu user={{ id: user.id, name: user.name }} />
+        <>
+          <Suspense fallback={null}>
+            <MessagesNavLink />
+          </Suspense>
+          <UserMenu user={{ id: user.id, name: user.name }} />
+        </>
       ) : (
         <Button variant="outline" className="h-9 px-3" render={<Link href="/login" />}>
           Sign in

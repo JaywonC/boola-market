@@ -1,15 +1,15 @@
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { DetailSkeleton } from "@/components/layout/skeletons";
 import { getCurrentUser } from "@/features/auth/session";
 import { BidList } from "@/features/auctions/components/bid-list";
 import { ListingArt } from "@/features/listings/components/listing-art";
+import { ListingThreadPanel } from "@/features/messages/components/listing-thread-panel";
 import { ThreadPreview } from "@/features/messages/components/thread-preview";
+import { annotateThread } from "@/features/messages/rules";
 import { Person } from "@/features/profiles/components/person";
 import { categoryLabel, CONDITION_LABELS } from "@/lib/categories";
 import { getListingDetail } from "@/lib/db/queries";
@@ -29,12 +29,13 @@ async function ListingBody({ params }: { params: Promise<{ id: string }> }) {
   if (!detail) notFound();
   const viewer = await getCurrentUser();
   const { listing } = detail;
-  const price =
-    listing.listingType === "auction"
-      ? detail.highBidCents
-        ? formatMoney(detail.highBidCents)
-        : formatMoney(listing.priceCents)
-      : formatMoney(listing.priceCents);
+  const viewerThread =
+    viewer && listing.listingType === "fixed"
+      ? detail.threads.find((thread) => thread.buyer.id === viewer.id)
+      : undefined;
+  const agreedCents = viewerThread ? annotateThread(viewerThread.messages).agreedCents : null;
+  const askingCents = listing.listingType === "auction" ? (detail.highBidCents ?? listing.priceCents) : listing.priceCents;
+  const price = formatMoney(agreedCents ?? askingCents);
 
   return (
     <article className="mx-auto grid max-w-6xl gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -70,25 +71,30 @@ async function ListingBody({ params }: { params: Promise<{ id: string }> }) {
       <aside className="h-fit space-y-4 lg:sticky lg:top-28">
         <div className="rounded-xl border border-border bg-card p-5">
           <p className="text-xs tracking-wide text-muted-foreground uppercase">
-            {listing.listingType === "auction" ? (detail.highBidCents ? "High bid" : "Starting bid") : "Asking"}
+            {agreedCents
+              ? "Your price"
+              : listing.listingType === "auction"
+                ? detail.highBidCents
+                  ? "High bid"
+                  : "Starting bid"
+                : "Asking"}
           </p>
           <p className="mt-1 font-serif text-4xl text-yale">{price}</p>
-          {listing.listingType === "auction" ? (
+          {agreedCents ? (
+            <p className="mt-1 text-sm text-muted-foreground">
+              Asking price is {formatMoney(listing.priceCents)} for everyone else.
+            </p>
+          ) : listing.listingType === "auction" ? (
             <p className="mt-1 text-sm text-muted-foreground">{formatAuctionEnd(listing.auctionEndsAt)}</p>
           ) : null}
-          {listing.status === "sold" ? (
-            <p className="mt-4 text-sm">This one already sold. The seller’s other listings are on their profile.</p>
-          ) : viewer?.id === listing.sellerId ? (
-            <p className="mt-4 text-sm">This is your listing. Buyers can find it from Browse.</p>
-          ) : viewer ? (
-            <p className="mt-4 text-sm">
-              You’re signed in as {viewer.name}. The messages below are how buyers and sellers agree on a handoff.
-            </p>
-          ) : (
-            <Button className="mt-4 h-10 w-full" render={<Link href={`/login?next=/listings/${listing.id}`} />}>
-              Sign in to arrange pickup
-            </Button>
-          )}
+          <ListingThreadPanel
+            listingId={listing.id}
+            listingType={listing.listingType}
+            status={listing.status}
+            sellerId={listing.sellerId}
+            sellerName={detail.seller.name}
+            viewer={viewer ? { id: viewer.id, name: viewer.name } : null}
+          />
         </div>
         <div className="rounded-xl border border-border bg-card p-5">
           <p className="mb-3 text-xs tracking-wide text-muted-foreground uppercase">Seller</p>
